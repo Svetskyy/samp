@@ -499,7 +499,7 @@ async function runGeneticAlgorithm() {
       console.error(e); // For debugging
       toggleLoading(false);
     }
-  }, 1000);
+  }, 2000);
 }async function regenerateAlgo() {
   try {
     // Show loading overlay
