@@ -3,7 +3,8 @@ const mysql = require("mysql");
 const bodyParser = require("body-parser");
 const zlib = require("zlib");
 const NodeCache = require("node-cache");
-const util = require("util"); // Add util module
+const util = require("util");
+const cors = require("cors");
 
 const cache = new NodeCache({ stdTTL: 3600 }); // Set expiration time to 1 hour
 
@@ -32,7 +33,7 @@ const queryAsync = util.promisify(db.query).bind(db);
 
 const app = express();
 app.use(bodyParser.json({ limit: "50mb" }));
-
+app.use(cors());
 app.use(express.static("./"));
 
 app.get("/", (req, res) => {
