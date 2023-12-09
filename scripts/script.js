@@ -500,8 +500,7 @@ async function runGeneticAlgorithm() {
       toggleLoading(false);
     }
   }, 2000);
-}
-async function regenerateAlgo() {
+}async function regenerateAlgo() {
   try {
     // Show loading overlay
     toggleLoading(true);
@@ -525,6 +524,9 @@ async function regenerateAlgo() {
           destCoordinates,
         }),
       });
+
+      // Wait for deletion to complete
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Adjust the delay as needed
     }
 
     // Call the genetic algorithm function

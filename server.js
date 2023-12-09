@@ -87,23 +87,31 @@ app.post("/api/check", async (req, res) => {
     res.status(500).send("Error checking data");
   }
 });
-
 app.post("/api/save-result", async (req, res) => {
   const { sourceCoordinates, destCoordinates, algResults } = req.body;
 
-  const existingData = await queryAsync("SELECT COUNT(*) as count FROM genetic_data2 WHERE sourceCoordinates = ? AND destCoordinates = ?", [JSON.stringify(sourceCoordinates), JSON.stringify(destCoordinates)]);
+  try {
+    const existingData = await queryAsync("SELECT COUNT(*) as count FROM genetic_data2 WHERE sourceCoordinates = ? AND destCoordinates = ?", [JSON.stringify(sourceCoordinates), JSON.stringify(destCoordinates)]);
 
-  if (existingData === 0) {
-    await queryAsync("INSERT INTO genetic_data2 (sourceCoordinates, destCoordinates, algResults) VALUES (?, ?, ?)", [JSON.stringify(sourceCoordinates), JSON.stringify(destCoordinates), JSON.stringify(algResults)]);
-    const cacheKey = `${JSON.stringify(sourceCoordinates)}_${JSON.stringify(destCoordinates)}`;
-    cache.set(cacheKey, JSON.stringify(algResults));
-    console.log("Data saved to database and cache");
-    res.send({ message: "Data saved successfully", id: results.insertId });
-  } else {
-    console.log("Data already exists in the database");
-    res.send({ message: "Data already exists in the database" });
+    if (existingData[0].count === 0) {
+      // Data doesn't exist, insert it into the database
+      const insertResult = await queryAsync("INSERT INTO genetic_data2 (sourceCoordinates, destCoordinates, algResults) VALUES (?, ?, ?)", [JSON.stringify(sourceCoordinates), JSON.stringify(destCoordinates), JSON.stringify(algResults)]);
+
+      const cacheKey = `${JSON.stringify(sourceCoordinates)}_${JSON.stringify(destCoordinates)}`;
+      cache.set(cacheKey, JSON.stringify(algResults));
+
+      console.log("Data saved to database and cache");
+      res.json({ message: "Data saved successfully", id: insertResult.insertId });
+    } else {
+      console.log("Data already exists in the database");
+      res.json({ message: "Data already exists in the database" });
+    }
+  } catch (error) {
+    console.error("Error saving result:", error);
+    res.status(500).send("Error saving result");
   }
 });
+
 
 app.delete("/api/delete-directions", async (req, res) => {
   const { sourceCoordinates, destCoordinates } = req.body;
